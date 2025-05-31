@@ -1,4 +1,4 @@
-// server.js – inkl. /vorschlag-Logik
+// server.js – inkl. Vorschlags-, Wetter- und Orte-Logik
 const http = require('http');
 const https = require('https');
 const url = require('url');
@@ -15,8 +15,11 @@ const server = http.createServer((req, res) => {
   // --- Vorschlagslogik ---
   if (parsedUrl.pathname === '/vorschlag') {
     const ort = query.ort || 'Bern';
-    const zeit = parseInt(query.zeit) || 2; // Stunden
-    const interessen = (query.interessen || '').split(',').map(x => x.trim().toLowerCase());
+    const zeit = parseInt(query.zeit) || 2;
+    const interessen = (query.interessen || '')
+      .split(',')
+      .map(x => x.trim().toLowerCase())
+      .filter(Boolean);
 
     const weatherEndpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=de`;
 
@@ -25,28 +28,37 @@ const server = http.createServer((req, res) => {
       apiRes.on('data', chunk => weatherData += chunk);
       apiRes.on('end', () => {
         const wetter = JSON.parse(weatherData);
-        const zustand = (wetter.weather?.[0]?.main || '').toLowerCase();
-
-        let antwort = `📍 Ort: ${ort}\n🕒 Zeitbudget: ${zeit}h\n🌤️ Wetter: ${wetter.weather?.[0]?.description || 'unbekannt'}\n\n`;
+        const wetterBeschreibung = (wetter.weather?.[0]?.description || '').toLowerCase();
+        const istSonnig = wetterBeschreibung.includes("clear") ||
+                          wetterBeschreibung.includes("sonne") ||
+                          wetterBeschreibung.includes("klar") ||
+                          wetterBeschreibung.includes("few clouds") ||
+                          (wetterBeschreibung.includes("clouds") && !wetterBeschreibung.includes("rain"));
 
         const outdoor = ["wandern", "spaziergang", "see", "stadtbummel", "biergarten"];
         const indoor = ["museum", "wellness", "kino", "escape room", "kaffeehaus"];
 
-        let vorschlaege = [];
-
-        const istSonnig = zustand.includes("sun") || zustand.includes("klar") || zustand.includes("few clouds") || zustand.includes("wolkenlos") || zustand.includes("clouds") && !zustand.includes("rain");
-
         const kandidaten = istSonnig ? outdoor : indoor;
-        interessen.forEach(i => {
-          if (kandidaten.includes(i)) vorschlaege.push(i);
-        });
+        let vorschlaege = interessen.filter(i => kandidaten.includes(i));
 
-        if (vorschlaege.length === 0) vorschlaege = kandidaten.slice(0, 3);
+        if (vorschlaege.length === 0) {
+          vorschlaege = kandidaten.slice(0, 3);
+        }
 
-        antwort += `✨ Basierend auf Wetter und Interessen empfehlen wir dir:\n• ` + vorschlaege.join('\n• ');
+        const antwortText = `📍 Ort: ${ort}\n🕒 Zeitbudget: ${zeit}h\n🌤️ Wetter: ${wetterBeschreibung || 'unbekannt'}\n\n✨ Basierend auf Wetter und Interessen empfehlen wir dir:\n• ` + vorschlaege.join('\n• ');
 
-        res.setHeader('Content-Type', 'text/plain');
-        res.end(antwort);
+        if (query.format === "json") {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            ort,
+            zeit,
+            wetter: wetterBeschreibung,
+            vorschlaege
+          }));
+        } else {
+          res.setHeader('Content-Type', 'text/plain');
+          res.end(antwortText);
+        }
       });
     }).on('error', err => {
       res.statusCode = 500;
@@ -55,7 +67,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // --- Bestehende /orte-Route ---
+  // --- /orte-Route ---
   if (parsedUrl.pathname === '/orte') {
     const ort = query.ort || 'Bern';
     const typ = query.typ || 'museum';
@@ -75,7 +87,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // --- Bestehende /wetter-Route ---
+  // --- /wetter-Route ---
   if (parsedUrl.pathname === '/wetter') {
     const ort = query.ort || 'Bern';
     const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=de`;
@@ -94,7 +106,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // --- Standard ---
+  // --- Standard-Antwort ---
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
   res.end('Server live. Nutze /orte, /wetter oder /vorschlag?ort=Zürich&zeit=3&interessen=wandern,museum');
