@@ -109,7 +109,7 @@ const server = http.createServer((req, res) => {
   // --- Standard-Antwort ---
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
-  res.end('Server live. Nutze /orte, /wetter oder /vorschlag?ort=Zürich&zeit=3&interessen=wandern,museum');
+  res.end('Server live. Nutze /orte, /wetter oder /vorschlag?ort=currentlocations&zeit=3&interessen=wandern,museum');
 });
 
 server.listen(port, hostname, () => {
