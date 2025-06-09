@@ -19,6 +19,18 @@ if (missingKeys.length) {
   );
 }
 
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // meters
+  const toRad = deg => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 const server = http.createServer((req, res) => {
   if (missingKeys.length) {
     res.statusCode = 500;
@@ -91,14 +103,58 @@ const server = http.createServer((req, res) => {
   if (parsedUrl.pathname === '/orte') {
     const ort = query.ort || 'Bern';
     const typ = query.typ || 'museum';
-    const endpoint = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(typ + ' in ' + ort)}&key=${GOOGLE_API_KEY}`;
+    const maxDist = parseInt(query.maxDist) || null;
 
-    https.get(endpoint, (apiRes) => {
-      let data = '';
-      apiRes.on('data', chunk => data += chunk);
-      apiRes.on('end', () => {
-        res.setHeader('Content-Type', 'application/json');
-        res.end(data);
+    const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(ort)}&key=${GOOGLE_API_KEY}`;
+    https.get(geoUrl, geoRes => {
+      let geoData = '';
+      geoRes.on('data', c => geoData += c);
+      geoRes.on('end', () => {
+        try {
+          const geo = JSON.parse(geoData);
+          const loc = geo.results?.[0]?.geometry?.location;
+          if (!loc) throw new Error('Geocoding fehlgeschlagen');
+
+          const placeUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(typ)}&location=${loc.lat},${loc.lng}&rankby=distance&key=${GOOGLE_API_KEY}`;
+          https.get(placeUrl, apiRes => {
+            let data = '';
+            apiRes.on('data', c => data += c);
+            apiRes.on('end', () => {
+              try {
+                const result = JSON.parse(data);
+                if (Array.isArray(result.results)) {
+                  result.results.forEach(p => {
+                    const pl = p.geometry?.location;
+                    if (pl) {
+                      p.distance = haversineDistance(loc.lat, loc.lng, pl.lat, pl.lng);
+                    }
+                  });
+                  if (maxDist) {
+                    result.results = result.results.filter(p => p.distance <= maxDist);
+                  }
+                  result.results.sort((a, b) => {
+                    if (a.distance !== b.distance) return a.distance - b.distance;
+                    return (b.rating || 0) - (a.rating || 0);
+                  });
+                }
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(result));
+              } catch (err) {
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: err.message }));
+              }
+            });
+          }).on('error', err => {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: err.message }));
+          });
+        } catch (err) {
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err.message }));
+        }
       });
     }).on('error', err => {
       res.statusCode = 500;
