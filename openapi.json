@@ -3,7 +3,11 @@
   "info": {
     "title": "Reiseplaner API",
     "version": "1.0.0",
-    "description": "API f\u00fcr Orte, Wetter, Routen und Vorschl\u00e4ge."
+    "description": "API f\u00fcr Orte, Wetter, Routen und Vorschl\u00e4ge.",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
   },
   "paths": {
     "/vorschlag": {
@@ -52,7 +56,7 @@
                 }
               },
               "text/plain": {
-                "example": "\uD83D\uDCCD Ort: Bern\n\uD83D\uDD52 Zeitbudget: 2h\n..."
+                "example": "\ud83d\udccd Ort: Bern\n\ud83d\udd52 Zeitbudget: 2h\n..."
               }
             }
           }
