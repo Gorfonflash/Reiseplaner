@@ -13,11 +13,13 @@ This project exposes a small HTTP server implemented in `server.js`. The API cov
 ## Running the server
 
 Set the required API keys and start the server:
+Set the required API keys and start the server using **npm**:
 
 ```bash
 export GOOGLE_API_KEY=yourGoogleKey
 export OPENWEATHER_API_KEY=yourOpenWeatherKey
 node server.js
+npm start
 ```
 
 Visit `http://localhost:3000/` or specify a custom `PORT`.
@@ -43,13 +45,3 @@ The `start` and `ziel` parameters are mandatory. If one of them is missing the s
 ```
 
 When both parameters refer to the same place, the API does not call Google Maps. Instead it immediately responds with:
-
-```json
-{"message": "Start und Ziel identisch"}
-```
-
-This logic is implemented in [`server.js`](server.js) and documented in [`openapi.json`](openapi.json)
-
-## License
-
-This project is released under the MIT License. See [LICENSE](LICENSE) for details.
