@@ -1,9 +1,4 @@
-# Reiseplaner API
-
-This project exposes a small HTTP server implemented in `server.js`. The API covers points of interest, weather data, directions and activity suggestions. The full schema for all endpoints can be found in [openapi.json](openapi.json).
-
-## Requirements
-
+@@ -7,41 +7,41 @@ This project exposes a small HTTP server implemented in `server.js`. The API cov
 - **Node.js** (not included in this repository).
 - Environment variables:
   - `GOOGLE_API_KEY` – Google Maps/Places API key.
@@ -30,6 +25,7 @@ See [openapi.json](openapi.json) for the complete specification. Short descripti
 
 - **`/vorschlag`** – activity recommendations based on the weather and a list of interests.
 - **`/orte`** – search for places of a specific type in a city.
+- **`/orte`** – search for places of a specific type in a city. Supports an optional `maxDist` (meters) parameter to limit the distance.
 - **`/geocode`** – geocode an address to latitude/longitude.
 - **`/poi`** – points of interest near coordinates.
 - **`/route`** – calculate a route between two places. Requires `start` and `ziel`. Returns a JSON message if start and destination are identical.
