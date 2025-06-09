@@ -87,6 +87,67 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // --- /geocode-Route ---
+  if (parsedUrl.pathname === '/geocode') {
+    const adresse = query.adresse || '';
+    const endpoint = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(adresse)}&key=${GOOGLE_API_KEY}`;
+
+    https.get(endpoint, apiRes => {
+      let data = '';
+      apiRes.on('data', chunk => data += chunk);
+      apiRes.on('end', () => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(data);
+      });
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: err.message }));
+    });
+    return;
+  }
+
+  // --- /poi-Route ---
+  if (parsedUrl.pathname === '/poi') {
+    const lat = query.lat;
+    const lng = query.lng;
+    const typ = query.typ || 'tourist_attraction';
+    const endpoint = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=2000&type=${encodeURIComponent(typ)}&key=${GOOGLE_API_KEY}`;
+
+    https.get(endpoint, apiRes => {
+      let data = '';
+      apiRes.on('data', chunk => data += chunk);
+      apiRes.on('end', () => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(data);
+      });
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: err.message }));
+    });
+    return;
+  }
+
+  // --- /route-Route ---
+  if (parsedUrl.pathname === '/route') {
+    const origin = query.start;
+    const destination = query.ziel;
+    const mode = query.modus || 'driving';
+    const endpoint = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=${encodeURIComponent(mode)}&key=${GOOGLE_API_KEY}`;
+
+    https.get(endpoint, apiRes => {
+      let data = '';
+      apiRes.on('data', chunk => data += chunk);
+      apiRes.on('end', () => {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(data);
+      });
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: err.message }));
+    });
+    return;
+  }
+
   // --- /wetter-Route ---
   if (parsedUrl.pathname === '/wetter') {
     const ort = query.ort || 'Bern';
