@@ -202,14 +202,14 @@
           {
             "name": "userOrt",
             "in": "query",
-            "required": false,
+            "required": true,
             "schema": { "type": "string" },
             "description": "Startort"
           },
           {
             "name": "zielOrt",
             "in": "query",
-            "required": false,
+            "required": true,
             "schema": { "type": "string" },
             "description": "Zielort"
           }
@@ -222,6 +222,16 @@
                 "examples": {
                   "identisch": { "value": { "message": "Start und Ziel identisch" } },
                   "zeit": { "value": { "dauer": "10 min", "abfahrt": "12:00" } }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Fehlende Parameter",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "missing": { "value": { "error": "Start oder Ziel fehlt" } }
                 }
               }
             }
