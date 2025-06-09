@@ -182,7 +182,9 @@
             "description": "Fehlende Parameter",
             "content": {
               "application/json": {
-                "example": { "error": "Start oder Ziel fehlt" }
+                "examples": {
+                  "missing": { "value": { "error": "Start oder Ziel fehlt" } }
+                }
               }
             }
           }
