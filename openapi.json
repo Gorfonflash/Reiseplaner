@@ -1,3 +1,6 @@
+
+`openapi.json`
+```json
 {
   "openapi": "3.0.3",
   "openapi": "3.1.0",
@@ -6,7 +9,7 @@
     "version": "1.0.0",
     "title": "Reise- und Ausflugsplanungssystem",
     "version": "1.2.0",
-    "description": "API f\u00fcr Orte, Wetter, Routen und Vorschl\u00e4ge.",
+    "description": "API für Orte, Wetter, Routen und Vorschläge.",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
@@ -19,7 +22,7 @@
     "/vorschlag": {
       "get": {
         "operationId": "aktivitaetVorschlagen",
-        "summary": "Aktivit\u00e4tsvorschl\u00e4ge basierend auf Wetter und Interessen",
+        "summary": "Aktivitätsvorschläge basierend auf Wetter und Interessen",
         "parameters": [
           {
             "name": "ort",
@@ -49,7 +52,7 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string" },
-            "description": "\"json\" f\u00fcr strukturiertes Ergebnis"
+            "description": "\"json\" für strukturiertes Ergebnis"
           }
         ],
         "responses": {
@@ -65,7 +68,7 @@
                 }
               },
               "text/plain": {
-                "example": "\ud83d\udccd Ort: Bern\n\ud83d\udd52 Zeitbudget: 2h\n..."
+                "example": "📍 Ort: Bern\n🕒 Zeitbudget: 2h\n..."
               }
             }
           }
@@ -94,6 +97,13 @@
             "required": true,
             "schema": { "type": "string" },
             "description": "Ortstyp"
+          },
+          {
+            "name": "maxDist",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" },
+            "description": "Maximale Entfernung in Metern"
           }
         ],
         "responses": {
@@ -130,7 +140,7 @@
     "/poi": {
       "get": {
         "operationId": "poiFinden",
-        "summary": "Sehensw\u00fcrdigkeiten in der N\u00e4he",
+        "summary": "Sehenswürdigkeiten in der Nähe",
         "parameters": [
           {
             "name": "lat",
@@ -144,7 +154,7 @@
             "in": "query",
             "required": true,
             "schema": { "type": "number" },
-            "description": "L\u00e4ngengrad"
+            "description": "Längengrad"
           },
           {
             "name": "typ",
@@ -217,7 +227,7 @@
     "/transportzeit": {
       "get": {
         "operationId": "transportzeitBerechnen",
-        "summary": "\u00d6V-Reisezeit zwischen zwei Orten",
+        "summary": "ÖV-Reisezeit zwischen zwei Orten",
         "parameters": [
           {
             "name": "userOrt",
@@ -262,7 +272,7 @@
     "/wetter": {
       "get": {
         "operationId": "wetterAbrufen",
-        "summary": "Aktuelles Wetter f\u00fcr einen Ort",
+        "summary": "Aktuelles Wetter für einen Ort",
         "parameters": [
           {
             "name": "ort",
