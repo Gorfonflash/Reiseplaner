@@ -8,17 +8,26 @@ const port = process.env.PORT || 3000;
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
 
-if (!GOOGLE_API_KEY) {
-  console.error('Error: GOOGLE_API_KEY is not defined.');
-  process.exit(1);
-}
+const missingKeys = [];
+if (!GOOGLE_API_KEY) missingKeys.push('GOOGLE_API_KEY');
+if (!OPENWEATHER_API_KEY) missingKeys.push('OPENWEATHER_API_KEY');
 
-if (!OPENWEATHER_API_KEY) {
-  console.error('Error: OPENWEATHER_API_KEY is not defined.');
-  process.exit(1);
+if (missingKeys.length) {
+  console.error(`Missing API keys: ${missingKeys.join(', ')}.`);
+  console.error(
+    'Endpoints will respond with an error until the keys are provided.'
+  );
 }
 
 const server = http.createServer((req, res) => {
+  if (missingKeys.length) {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end(
+      'Server misconfigured: Missing API keys - ' + missingKeys.join(', ')
+    );
+    return;
+  }
   const parsedUrl = url.parse(req.url, true);
   const query = parsedUrl.query;
 
