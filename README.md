@@ -49,3 +49,7 @@ When both parameters refer to the same place, the API does not call Google Maps.
 ```
 
 This logic is implemented in [`server.js`](server.js) and documented in [`openapi.json`](openapi.json)
+
+## License
+
+This project is released under the MIT License. See [LICENSE](LICENSE) for details.
