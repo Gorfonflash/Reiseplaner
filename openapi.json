@@ -1,17 +1,24 @@
 {
   "openapi": "3.0.3",
+  "openapi": "3.1.0",
   "info": {
     "title": "Reiseplaner API",
     "version": "1.0.0",
+    "title": "Reise- und Ausflugsplanungssystem",
+    "version": "1.2.0",
     "description": "API f\u00fcr Orte, Wetter, Routen und Vorschl\u00e4ge.",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
     }
   },
+  "servers": [
+    { "url": "https://reiseplaner.onrender.com" }
+  ],
   "paths": {
     "/vorschlag": {
       "get": {
+        "operationId": "aktivitaetVorschlagen",
         "summary": "Aktivit\u00e4tsvorschl\u00e4ge basierend auf Wetter und Interessen",
         "parameters": [
           {
@@ -19,6 +26,8 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string", "default": "Bern" },
+            "required": true,
+            "schema": { "type": "string" },
             "description": "Stadtname"
           },
           {
@@ -65,6 +74,7 @@
     },
     "/orte": {
       "get": {
+        "operationId": "orteFinden",
         "summary": "Orte eines Typs in einer Stadt",
         "parameters": [
           {
@@ -72,6 +82,8 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string", "default": "Bern" },
+            "required": true,
+            "schema": { "type": "string" },
             "description": "Stadtname"
           },
           {
@@ -79,6 +91,8 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string", "default": "museum" },
+            "required": true,
+            "schema": { "type": "string" },
             "description": "Ortstyp"
           }
         ],
@@ -92,6 +106,7 @@
     },
     "/geocode": {
       "get": {
+        "operationId": "adresseGeocodieren",
         "summary": "Geokoordinaten zu einer Adresse",
         "parameters": [
           {
@@ -99,6 +114,8 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string", "default": "" },
+            "required": true,
+            "schema": { "type": "string" },
             "description": "Adresse"
           }
         ],
@@ -112,6 +129,7 @@
     },
     "/poi": {
       "get": {
+        "operationId": "poiFinden",
         "summary": "Sehensw\u00fcrdigkeiten in der N\u00e4he",
         "parameters": [
           {
@@ -146,6 +164,7 @@
     },
     "/route": {
       "get": {
+        "operationId": "routeBerechnen",
         "summary": "Route zwischen zwei Punkten",
         "parameters": [
           {
@@ -171,7 +190,7 @@
           }
         ],
         "responses": {
-          "200": {
+@@ -175,89 +183,91 @@
             "description": "Routendaten oder Hinweis auf gleiche Orte",
             "content": {
               "application/json": {
@@ -197,6 +216,7 @@
     },
     "/transportzeit": {
       "get": {
+        "operationId": "transportzeitBerechnen",
         "summary": "\u00d6V-Reisezeit zwischen zwei Orten",
         "parameters": [
           {
@@ -241,6 +261,7 @@
     },
     "/wetter": {
       "get": {
+        "operationId": "wetterAbrufen",
         "summary": "Aktuelles Wetter f\u00fcr einen Ort",
         "parameters": [
           {
@@ -248,6 +269,8 @@
             "in": "query",
             "required": false,
             "schema": { "type": "string", "default": "Bern" },
+            "required": true,
+            "schema": { "type": "string" },
             "description": "Stadtname"
           }
         ],
