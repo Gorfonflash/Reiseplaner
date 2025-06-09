@@ -147,14 +147,14 @@
           {
             "name": "start",
             "in": "query",
-            "required": false,
+            "required": true,
             "schema": { "type": "string" },
             "description": "Startort"
           },
           {
             "name": "ziel",
             "in": "query",
-            "required": false,
+            "required": true,
             "schema": { "type": "string" },
             "description": "Zielort"
           },
@@ -175,6 +175,14 @@
                   "identisch": { "value": { "message": "Start und Ziel identisch" } },
                   "google": { "value": { "routes": [] } }
                 }
+              }
+            }
+          },
+          "400": {
+            "description": "Fehlende Parameter",
+            "content": {
+              "application/json": {
+                "example": { "error": "Start oder Ziel fehlt" }
               }
             }
           }
