@@ -129,9 +129,16 @@ const server = http.createServer((req, res) => {
 
   // --- /route-Route ---
   if (parsedUrl.pathname === '/route') {
-    const origin = query.start;
-    const destination = query.ziel;
+    const origin = (query.start || '').trim();
+    const destination = (query.ziel || '').trim();
     const mode = query.modus || 'driving';
+
+    if (origin.toLowerCase() === destination.toLowerCase()) {
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ message: 'Start und Ziel identisch' }));
+      return;
+    }
+
     const endpoint = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=${encodeURIComponent(mode)}&key=${GOOGLE_API_KEY}`;
 
     https.get(endpoint, apiRes => {
