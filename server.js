@@ -152,6 +152,13 @@ const server = http.createServer((req, res) => {
     const destination = (query.ziel || '').trim();
     const mode = query.modus || 'driving';
 
+    if (!origin || !destination) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Start oder Ziel fehlt' }));
+      return;
+    }
+
     if (origin.toLowerCase() === destination.toLowerCase()) {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ message: 'Start und Ziel identisch' }));
