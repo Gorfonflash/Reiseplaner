@@ -1,14 +1,8 @@
-
-`openapi.json`
-```json
 {
   "openapi": "3.0.3",
-  "openapi": "3.1.0",
   "info": {
     "title": "Reiseplaner API",
     "version": "1.0.0",
-    "title": "Reise- und Ausflugsplanungssystem",
-    "version": "1.2.0",
     "description": "API für Orte, Wetter, Routen und Vorschläge.",
     "license": {
       "name": "MIT",
@@ -27,31 +21,29 @@
           {
             "name": "ort",
             "in": "query",
-            "required": false,
             "schema": { "type": "string", "default": "Bern" },
-            "required": true,
-            "schema": { "type": "string" },
+            "required": false,
             "description": "Stadtname"
           },
           {
             "name": "zeit",
             "in": "query",
-            "required": false,
             "schema": { "type": "integer", "default": 2 },
+            "required": false,
             "description": "Zeitbudget in Stunden"
           },
           {
             "name": "interessen",
             "in": "query",
-            "required": false,
             "schema": { "type": "string" },
+            "required": false,
             "description": "Kommagetrennte Interessen"
           },
           {
             "name": "format",
             "in": "query",
-            "required": false,
             "schema": { "type": "string" },
+            "required": false,
             "description": "\"json\" für strukturiertes Ergebnis"
           }
         ],
@@ -83,26 +75,22 @@
           {
             "name": "ort",
             "in": "query",
-            "required": false,
             "schema": { "type": "string", "default": "Bern" },
-            "required": true,
-            "schema": { "type": "string" },
+            "required": false,
             "description": "Stadtname"
           },
           {
             "name": "typ",
             "in": "query",
-            "required": false,
             "schema": { "type": "string", "default": "museum" },
-            "required": true,
-            "schema": { "type": "string" },
+            "required": false,
             "description": "Ortstyp"
           },
           {
             "name": "maxDist",
             "in": "query",
-            "required": false,
             "schema": { "type": "integer" },
+            "required": false,
             "description": "Maximale Entfernung in Metern"
           }
         ],
@@ -122,10 +110,8 @@
           {
             "name": "adresse",
             "in": "query",
-            "required": false,
-            "schema": { "type": "string", "default": "" },
-            "required": true,
             "schema": { "type": "string" },
+            "required": false,
             "description": "Adresse"
           }
         ],
@@ -145,22 +131,22 @@
           {
             "name": "lat",
             "in": "query",
-            "required": true,
             "schema": { "type": "number" },
+            "required": true,
             "description": "Breitengrad"
           },
           {
             "name": "lng",
             "in": "query",
-            "required": true,
             "schema": { "type": "number" },
+            "required": true,
             "description": "Längengrad"
           },
           {
             "name": "typ",
             "in": "query",
-            "required": false,
             "schema": { "type": "string", "default": "tourist_attraction" },
+            "required": false,
             "description": "Ortstyp"
           }
         ],
@@ -180,27 +166,27 @@
           {
             "name": "start",
             "in": "query",
-            "required": true,
             "schema": { "type": "string" },
+            "required": true,
             "description": "Startort"
           },
           {
             "name": "ziel",
             "in": "query",
-            "required": true,
             "schema": { "type": "string" },
+            "required": true,
             "description": "Zielort"
           },
           {
             "name": "modus",
             "in": "query",
-            "required": false,
             "schema": { "type": "string", "default": "driving" },
+            "required": false,
             "description": "Fortbewegungsmodus"
           }
         ],
         "responses": {
-@@ -175,89 +183,91 @@
+          "200": {
             "description": "Routendaten oder Hinweis auf gleiche Orte",
             "content": {
               "application/json": {
@@ -232,15 +218,15 @@
           {
             "name": "userOrt",
             "in": "query",
-            "required": true,
             "schema": { "type": "string" },
+            "required": true,
             "description": "Startort"
           },
           {
             "name": "zielOrt",
             "in": "query",
-            "required": true,
             "schema": { "type": "string" },
+            "required": true,
             "description": "Zielort"
           }
         ],
@@ -277,10 +263,8 @@
           {
             "name": "ort",
             "in": "query",
-            "required": false,
             "schema": { "type": "string", "default": "Bern" },
-            "required": true,
-            "schema": { "type": "string" },
+            "required": false,
             "description": "Stadtname"
           }
         ],
