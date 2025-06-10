@@ -10,13 +10,19 @@ This project exposes a small HTTP server implemented in `server.js`. The API cov
   - `OPENWEATHER_API_KEY` – OpenWeather API key.
   - `PORT` – optional port (defaults to `3000`).
 
+
 ## Running the server
 
-Set the required API keys and start the server:
-Set the required API keys and start the server using **npm**:
+Set your API keys using environment variables. You may also define `PORT` to override the default of `3000`.
 
 ```bash
 export GOOGLE_API_KEY=yourGoogleKey
 export OPENWEATHER_API_KEY=yourOpenWeatherKey
-node server.js
+export PORT=8080   # optional
+```
+
+Start the server with **npm**:
+
+```bash
 npm start
+```
