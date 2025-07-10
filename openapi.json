@@ -370,7 +370,11 @@
     "/foto": {
       "get": {
         "operationId": "fotoUrl",
-        "summary": "Gibt eine Google-Photo-URL zurück",
+  "summary": "Gibt eine CDN-URL zu einem Google-Foto zurück",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "query",
         "parameters": [
           {
             "name": "reference",
@@ -429,6 +433,18 @@
             },
             "required": false,
             "description": "Zeitzone"
+ "schema": {
+              "type": "integer",
+              "default": 60
+            },
+            "required": false,
+            "description": "Dauer der Aktivität in Minuten"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan",
+            "content": {
           }
         ],
         "responses": {

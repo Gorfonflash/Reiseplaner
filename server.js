@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 const moment = require('moment-timezone');
 const i18next = require('i18next');
-const { z } = require('zod');
 
 const hostname = '0.0.0.0';
 const port = process.env.PORT || 3000;
@@ -57,31 +56,84 @@ const activityTags = {
   'kaffeehaus': ['paar']
 };
 
-function sendJsonError(res, status, message) {
-  res.statusCode = status;
-  res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify({ status, message }));
-}
+const server = http.createServer((req, res) => {
+  if (missingKeys.length) {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'text/plain');
+    res.end(
+      'Server misconfigured: Missing API keys - ' + missingKeys.join(',')
+    );
+    return;
+  }
+  const parsedUrl = url.parse(req.url, true);
+  const query = parsedUrl.query;
+  const lang = (req.headers['accept-language'] || 'en').split(',')[0].split('-')[0];
+  i18next.changeLanguage(lang);
 
-function fetchWeather(ort) {
-  return new Promise((resolve, reject) => {
-    const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=de`;
-    https.get(endpoint, apiRes => {
-      let data = '';
-      apiRes.on('data', c => data += c);
+  // --- Vorschlagslogik ---
+  if (parsedUrl.pathname === '/vorschlag') {
+    const ort = query.ort || 'Bern';
+    const zeit = parseInt(query.zeit) || 2;
+    const interessen = (query.interessen || '')
+      .split(',')
+      .map(x => x.trim().toLowerCase())
+      .filter(Boolean);
+
+  const weatherEndpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=${lang}`;
+
+    https.get(weatherEndpoint, (apiRes) => {
+      let weatherData = '';
+      apiRes.on('data', chunk => weatherData += chunk);
       apiRes.on('end', () => {
-        try {
-          resolve(JSON.parse(data));
-        } catch (err) {
-          reject(err);
+        const wetter = JSON.parse(weatherData);
+        const wetterBeschreibung = (wetter.weather?.[0]?.description || '').toLowerCase();
+        const istSonnig = wetterBeschreibung.includes("clear") ||
+                          wetterBeschreibung.includes("sonne") ||
+                          wetterBeschreibung.includes("klar") ||
+                          wetterBeschreibung.includes("few clouds") ||
+                          (wetterBeschreibung.includes("clouds") && !wetterBeschreibung.includes("rain"));
+
+        const outdoor = ["wandern", "spaziergang", "see", "stadtbummel", "biergarten"];
+        const indoor = ["museum", "wellness", "kino", "escape room", "kaffeehaus"];
+
+        const kandidaten = istSonnig ? outdoor : indoor;
+        let vorschlaege = interessen.filter(i => kandidaten.includes(i));
+
+        if (vorschlaege.length === 0) {
+          vorschlaege = kandidaten.slice(0, 3);
+        }
+
+        const items = vorschlaege.map(v => ({ name: v, tags: activityTags[v] || [] }));
+
+        const antwortText = `📍 ${i18next.t('ort')}: ${ort}\n🕒 ${i18next.t('zeitbudget')}: ${zeit}h\n🌤️ ${i18next.t('wetter')}: ${wetterBeschreibung || 'unbekannt'}\n\n✨ ${i18next.t('empfehlung')}\n• ` + vorschlaege.join('\n• ');
+
+        if (query.format === "json") {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            ort,
+            zeit,
+            wetter: wetterBeschreibung,
+            vorschlaege: items
+          }));
+        } else {
+          res.setHeader('Content-Type', 'text/plain');
+          res.end(antwortText);
         }
       });
-    }).on('error', reject);
-  });
-}
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'text/plain');
+      res.end("Fehler beim Abrufen der Wetterdaten: " + err.message);
+    });
+    return;
+  }
 
-function fetchPlaces(ort, typ, maxDist = null) {
-  return new Promise((resolve, reject) => {
+  // --- /orte-Route ---
+  if (parsedUrl.pathname === '/orte') {
+    const ort = query.ort || 'Bern';
+    const typ = query.typ || 'museum';
+    const maxDist = parseInt(query.maxDist) || null;
+
     const geoUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(ort)}&key=${GOOGLE_API_KEY}`;
     https.get(geoUrl, geoRes => {
       let geoData = '';
@@ -90,7 +142,8 @@ function fetchPlaces(ort, typ, maxDist = null) {
         try {
           const geo = JSON.parse(geoData);
           const loc = geo.results?.[0]?.geometry?.location;
-          if (!loc) return reject(new Error('Geocoding fehlgeschlagen'));
+          if (!loc) throw new Error('Geocoding fehlgeschlagen');
+
           const placeUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(typ)}&location=${loc.lat},${loc.lng}&rankby=distance&key=${GOOGLE_API_KEY}`;
           https.get(placeUrl, apiRes => {
             let data = '';
@@ -113,108 +166,30 @@ function fetchPlaces(ort, typ, maxDist = null) {
                     return (b.rating || 0) - (a.rating || 0);
                   });
                 }
-                resolve(result);
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify(result));
               } catch (err) {
-                reject(err);
+                res.statusCode = 500;
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ error: err.message }));
               }
             });
-          }).on('error', reject);
+          }).on('error', err => {
+            res.statusCode = 500;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ error: err.message }));
+          });
         } catch (err) {
-          reject(err);
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ error: err.message }));
         }
       });
-    }).on('error', reject);
-  });
-}
-
-const server = http.createServer((req, res) => {
-  if (missingKeys.length) {
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'text/plain');
-    res.end(
-      'Server misconfigured: Missing API keys - ' + missingKeys.join(', ')
-    );
-    return;
-  }
-  const parsedUrl = url.parse(req.url, true);
-  const query = parsedUrl.query;
-  const lang = (req.headers['accept-language'] || 'en').split(',')[0].split('-')[0];
-  i18next.changeLanguage(lang);
-
-  // --- Vorschlagslogik ---
-  if (parsedUrl.pathname === '/vorschlag') {
-    const schema = z.object({
-      ort: z.string().min(1).default('Bern'),
-      zeit: z.preprocess(v => parseInt(v, 10), z.number().int().positive().default(2)),
-      interessen: z.preprocess(v => {
-        if (typeof v !== 'string') return [];
-        return v.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-      }, z.array(z.string()))
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: err.message }));
     });
-
-    let params;
-    try {
-      params = schema.parse(query);
-    } catch (err) {
-      return sendJsonError(res, 400, 'Ungültige Parameter');
-    }
-
-    const { ort, zeit, interessen } = params;
-
-    fetchWeather(ort)
-      .then(wetter => {
-        const beschreibung = (wetter.weather?.[0]?.description || '').toLowerCase();
-        const istSonnig = beschreibung.includes('clear') ||
-                          beschreibung.includes('sonne') ||
-                          beschreibung.includes('klar') ||
-                          beschreibung.includes('few clouds') ||
-                          (beschreibung.includes('clouds') && !beschreibung.includes('rain'));
-
-        const outdoor = ['wandern', 'spaziergang', 'see', 'stadtbummel', 'biergarten'];
-        const indoor = ['museum', 'wellness', 'kino', 'escape room', 'kaffeehaus'];
-
-        const kandidaten = istSonnig ? outdoor : indoor;
-        let auswahl = interessen.filter(i => kandidaten.includes(i));
-        if (auswahl.length === 0) {
-          auswahl = kandidaten.slice(0, 1);
-        } else {
-          auswahl = auswahl.slice(0, 1);
-        }
-        const typ = auswahl[0];
-
-        return Promise.all([Promise.resolve(beschreibung), fetchPlaces(ort, typ)])
-          .then(([desc, places]) => ({ desc, typ, places: places.results || [] }));
-      })
-      .then(({ desc, typ, places }) => {
-        const vorschlaege = places.slice(0, 3).map(p => ({
-          name: p.name,
-          tags: activityTags[typ] || [],
-          adresse: p.formatted_address,
-          distance: p.distance
-        }));
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ ort, zeit, wetter: desc, vorschlaege }));
-      })
-      .catch(err => {
-        sendJsonError(res, 500, err.message);
-      });
-    return;
-  }
-
-  // --- /orte-Route ---
-  if (parsedUrl.pathname === '/orte') {
-    const ort = query.ort || 'Bern';
-    const typ = query.typ || 'museum';
-    const maxDist = parseInt(query.maxDist) || null;
-
-    fetchPlaces(ort, typ, maxDist)
-      .then(result => {
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(result));
-      })
-      .catch(err => {
-        sendJsonError(res, 500, err.message);
-      });
     return;
   }
 
@@ -241,14 +216,30 @@ const server = http.createServer((req, res) => {
   // --- /foto-Route ---
   if (parsedUrl.pathname === '/foto') {
     const reference = query.reference || '';
-    const maxwidth = query.maxwidth || 400;
+    const maxwidth = parseInt(query.maxwidth) || 400;
     if (!reference) {
-      sendJsonError(res, 400, 'reference fehlt');
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'reference fehlt' }));
       return;
     }
-    const urlPhoto = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(reference)}&key=${GOOGLE_API_KEY}`;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ url: urlPhoto }));
+
+    const photoEndpoint = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(reference)}&key=${GOOGLE_API_KEY}`;
+    https.get(photoEndpoint, apiRes => {
+      const cdnUrl = apiRes.headers.location;
+      if (!cdnUrl) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Kein Foto gefunden' }));
+        return;
+      }
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ url: cdnUrl }));
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: err.message }));
+    });
     return;
   }
 
@@ -362,9 +353,9 @@ const server = http.createServer((req, res) => {
     const startMoment = moment.tz(start, 'HH:mm', tz);
     const plan = [
       { step: 'Anreise', time: startMoment.format('HH:mm') },
-      { step: 'Aktivit\u00e4t', time: startMoment.clone().add(30, 'minutes').format('HH:mm') },
+      { step: 'Aktivität', time: startMoment.clone().add(30, 'minutes').format('HH:mm') },
       { step: 'Essen', time: startMoment.clone().add(30 + dauerAkt, 'minutes').format('HH:mm') },
-      { step: 'R\u00fcckreise', time: startMoment.clone().add(90 + dauerAkt, 'minutes').format('HH:mm') }
+      { step: 'Rückreise', time: startMoment.clone().add(90 + dauerAkt, 'minutes').format('HH:mm') }
     ];
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ plan }));
@@ -374,14 +365,20 @@ const server = http.createServer((req, res) => {
   // --- /wetter-Route ---
   if (parsedUrl.pathname === '/wetter') {
     const ort = query.ort || 'Bern';
-    fetchWeather(ort)
-      .then(data => {
+    const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=${lang}`;
+
+    https.get(endpoint, (apiRes) => {
+      let data = '';
+      apiRes.on('data', chunk => data += chunk);
+      apiRes.on('end', () => {
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(data));
-      })
-      .catch(err => {
-        sendJsonError(res, 500, err.message);
+        res.end(data);
       });
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: err.message }));
+    });
     return;
   }
 
@@ -394,3 +391,4 @@ const server = http.createServer((req, res) => {
 server.listen(port, hostname, () => {
   console.log(`Server läuft unter http://${hostname}:${port}/`);
 });
+
