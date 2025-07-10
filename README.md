@@ -9,7 +9,7 @@ Key additions:
 
 ## Requirements
 
-- **Node.js** (not included in this repository).
+ - **Node.js** version 16 or later (not included in this repository).
 - Environment variables:
   - `GOOGLE_API_KEY` – Google Maps/Places API key.
   - `OPENWEATHER_API_KEY` – OpenWeather API key.
