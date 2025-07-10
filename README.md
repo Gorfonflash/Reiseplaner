@@ -26,9 +26,14 @@ export OPENWEATHER_API_KEY=yourOpenWeatherKey
 export PORT=8080   # optional
 ```
 
-Install dependencies and start the server with **npm**:
+Install the required dependencies first:
 
 ```bash
 npm install
+```
+
+Then start the server:
+
+```bash
 npm start
 ```
