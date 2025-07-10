@@ -5,7 +5,7 @@ This project exposes a small HTTP server implemented in `server.js`. The API cov
 Key additions:
 - `/foto` – resolves a Places `photo_reference` to the final CDN URL.
 - `/tagesablauf` – produces a simple timetable for the day.
-- `/vorschlag` – suggestions now include audience tags (`familie`, `paar`, `adrenalin`).
+- `/vorschlag` – suggestions include audience tags (`familie`, `paar`, `adrenalin`) and now validate input using **zod**.
 
 ## Requirements
 
