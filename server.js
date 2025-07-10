@@ -4,7 +4,6 @@ const https = require('https');
 const url = require('url');
 const fs = require('fs');
 const path = require('path');
-const moment = require('moment-timezone');
 const i18next = require('i18next');
 
 const hostname = '0.0.0.0';
@@ -347,15 +346,23 @@ const server = http.createServer((req, res) => {
   // --- /tagesablauf-Route ---
   if (parsedUrl.pathname === '/tagesablauf') {
     const start = query.start || '09:00';
-    const tz = query.tz || 'Europe/Berlin';
+    const tz = query.tz || 'Europe/Berlin'; // kept for API compatibility
     const dauerAkt = parseInt(query.dauerAktivitaet) || 60;
 
-    const startMoment = moment.tz(start, 'HH:mm', tz);
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const toMinutes = (h, m) => h * 60 + m;
+    const format = mins => {
+      const h = Math.floor(mins / 60) % 24;
+      const m = mins % 60;
+      return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+    };
+
+    const startTotal = toMinutes(startHour, startMinute);
     const plan = [
-      { step: 'Anreise', time: startMoment.format('HH:mm') },
-      { step: 'Aktivität', time: startMoment.clone().add(30, 'minutes').format('HH:mm') },
-      { step: 'Essen', time: startMoment.clone().add(30 + dauerAkt, 'minutes').format('HH:mm') },
-      { step: 'Rückreise', time: startMoment.clone().add(90 + dauerAkt, 'minutes').format('HH:mm') }
+      { step: 'Anreise', time: format(startTotal) },
+      { step: 'Aktivität', time: format(startTotal + 30) },
+      { step: 'Essen', time: format(startTotal + 30 + dauerAkt) },
+      { step: 'Rückreise', time: format(startTotal + 90 + dauerAkt) }
     ];
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ plan }));
