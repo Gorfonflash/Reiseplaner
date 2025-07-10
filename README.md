@@ -1,6 +1,5 @@
 # Reiseplaner API
 
-This project exposes a small HTTP server implemented in `server.js`. The API covers points of interest, weather data, directions and activity suggestions. The full schema for all endpoints can be found in [openapi.json](openapi.json).
 This project exposes a small HTTP server implemented in `server.js`. The API covers points of interest, weather data, directions and activity suggestions. Additional helper endpoints provide photos and day plans. The full schema for all endpoints can be found in [openapi.json](openapi.json).
 
 Key additions:
