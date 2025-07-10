@@ -10,7 +10,9 @@
     }
   },
   "servers": [
-    { "url": "https://reiseplaner.onrender.com" }
+    {
+      "url": "https://reiseplaner.onrender.com"
+    }
   ],
   "paths": {
     "/vorschlag": {
@@ -21,28 +23,38 @@
           {
             "name": "ort",
             "in": "query",
-            "schema": { "type": "string", "default": "Bern" },
+            "schema": {
+              "type": "string",
+              "default": "Bern"
+            },
             "required": false,
             "description": "Stadtname"
           },
           {
             "name": "zeit",
             "in": "query",
-            "schema": { "type": "integer", "default": 2 },
+            "schema": {
+              "type": "integer",
+              "default": 2
+            },
             "required": false,
             "description": "Zeitbudget in Stunden"
           },
           {
             "name": "interessen",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "required": false,
             "description": "Kommagetrennte Interessen"
           },
           {
             "name": "format",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "required": false,
             "description": "\"json\" für strukturiertes Ergebnis"
           }
@@ -56,7 +68,22 @@
                   "ort": "Bern",
                   "zeit": 2,
                   "wetter": "klar",
-                  "vorschlaege": ["museum", "kino"]
+                  "vorschlaege": [
+                    {
+                      "name": "museum",
+                      "tags": [
+                        "familie",
+                        "paar"
+                      ]
+                    },
+                    {
+                      "name": "kino",
+                      "tags": [
+                        "familie",
+                        "paar"
+                      ]
+                    }
+                  ]
                 }
               },
               "text/plain": {
@@ -75,21 +102,29 @@
           {
             "name": "ort",
             "in": "query",
-            "schema": { "type": "string", "default": "Bern" },
+            "schema": {
+              "type": "string",
+              "default": "Bern"
+            },
             "required": false,
             "description": "Stadtname"
           },
           {
             "name": "typ",
             "in": "query",
-            "schema": { "type": "string", "default": "museum" },
+            "schema": {
+              "type": "string",
+              "default": "museum"
+            },
             "required": false,
             "description": "Ortstyp"
           },
           {
             "name": "maxDist",
             "in": "query",
-            "schema": { "type": "integer" },
+            "schema": {
+              "type": "integer"
+            },
             "required": false,
             "description": "Maximale Entfernung in Metern"
           }
@@ -97,7 +132,9 @@
         "responses": {
           "200": {
             "description": "Antwort von Google Places",
-            "content": { "application/json": {} }
+            "content": {
+              "application/json": {}
+            }
           }
         }
       }
@@ -110,7 +147,9 @@
           {
             "name": "adresse",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "required": false,
             "description": "Adresse"
           }
@@ -118,7 +157,9 @@
         "responses": {
           "200": {
             "description": "Geocodergebnis",
-            "content": { "application/json": {} }
+            "content": {
+              "application/json": {}
+            }
           }
         }
       }
@@ -131,21 +172,28 @@
           {
             "name": "lat",
             "in": "query",
-            "schema": { "type": "number" },
+            "schema": {
+              "type": "number"
+            },
             "required": true,
             "description": "Breitengrad"
           },
           {
             "name": "lng",
             "in": "query",
-            "schema": { "type": "number" },
+            "schema": {
+              "type": "number"
+            },
             "required": true,
             "description": "Längengrad"
           },
           {
             "name": "typ",
             "in": "query",
-            "schema": { "type": "string", "default": "tourist_attraction" },
+            "schema": {
+              "type": "string",
+              "default": "tourist_attraction"
+            },
             "required": false,
             "description": "Ortstyp"
           }
@@ -153,7 +201,9 @@
         "responses": {
           "200": {
             "description": "Antwort von Google Places",
-            "content": { "application/json": {} }
+            "content": {
+              "application/json": {}
+            }
           }
         }
       }
@@ -166,21 +216,28 @@
           {
             "name": "start",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "required": true,
             "description": "Startort"
           },
           {
             "name": "ziel",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "required": true,
             "description": "Zielort"
           },
           {
             "name": "modus",
             "in": "query",
-            "schema": { "type": "string", "default": "driving" },
+            "schema": {
+              "type": "string",
+              "default": "driving"
+            },
             "required": false,
             "description": "Fortbewegungsmodus"
           }
@@ -191,8 +248,16 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "identisch": { "value": { "message": "Start und Ziel identisch" } },
-                  "google": { "value": { "routes": [] } }
+                  "identisch": {
+                    "value": {
+                      "message": "Start und Ziel identisch"
+                    }
+                  },
+                  "google": {
+                    "value": {
+                      "routes": []
+                    }
+                  }
                 }
               }
             }
@@ -202,7 +267,11 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "missing": { "value": { "error": "Start oder Ziel fehlt" } }
+                  "missing": {
+                    "value": {
+                      "error": "Start oder Ziel fehlt"
+                    }
+                  }
                 }
               }
             }
@@ -218,14 +287,18 @@
           {
             "name": "userOrt",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "required": true,
             "description": "Startort"
           },
           {
             "name": "zielOrt",
             "in": "query",
-            "schema": { "type": "string" },
+            "schema": {
+              "type": "string"
+            },
             "required": true,
             "description": "Zielort"
           }
@@ -236,8 +309,17 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "identisch": { "value": { "message": "Start und Ziel identisch" } },
-                  "zeit": { "value": { "dauer": "10 min", "abfahrt": "12:00" } }
+                  "identisch": {
+                    "value": {
+                      "message": "Start und Ziel identisch"
+                    }
+                  },
+                  "zeit": {
+                    "value": {
+                      "dauer": "10 min",
+                      "abfahrt": "12:00"
+                    }
+                  }
                 }
               }
             }
@@ -247,7 +329,11 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "missing": { "value": { "error": "Start oder Ziel fehlt" } }
+                  "missing": {
+                    "value": {
+                      "error": "Start oder Ziel fehlt"
+                    }
+                  }
                 }
               }
             }
@@ -263,7 +349,10 @@
           {
             "name": "ort",
             "in": "query",
-            "schema": { "type": "string", "default": "Bern" },
+            "schema": {
+              "type": "string",
+              "default": "Bern"
+            },
             "required": false,
             "description": "Stadtname"
           }
@@ -271,7 +360,83 @@
         "responses": {
           "200": {
             "description": "Wetterdaten",
-            "content": { "application/json": {} }
+            "content": {
+              "application/json": {}
+            }
+          }
+        }
+      }
+    },
+    "/foto": {
+      "get": {
+        "operationId": "fotoUrl",
+        "summary": "Gibt eine Google-Photo-URL zurück",
+        "parameters": [
+          {
+            "name": "reference",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "photo_reference aus Places API"
+          },
+          {
+            "name": "maxwidth",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "default": 400
+            },
+            "required": false,
+            "description": "Breite des Bildes"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "URL",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+            "description": "Fehlende reference"
+          }
+        }
+      }
+    },
+    "/tagesablauf": {
+      "get": {
+        "operationId": "tagesablaufGenerieren",
+        "summary": "Erzeugt einen einfachen Tagesplan",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "09:00"
+            },
+            "required": false,
+            "description": "Startzeit HH:mm"
+          },
+          {
+            "name": "tz",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "Europe/Berlin"
+            },
+            "required": false,
+            "description": "Zeitzone"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Plan",
+            "content": {
+              "application/json": {}
+            }
           }
         }
       }
