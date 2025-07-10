@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "i18next": "^22.4.9",
-    "moment-timezone": "^0.5.40"
+    "moment-timezone": "^0.5.40",
+    "zod": "^3.22.4"
   }
 }
