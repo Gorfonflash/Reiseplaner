@@ -1,0 +1,7 @@
+{
+  "ort": "Location",
+  "zeitbudget": "Time budget",
+  "wetter": "Weather",
+  "empfehlung": "Based on weather and interests we suggest:",
+  "server_live": "Server live. Use /orte, /wetter or /vorschlag?ort=currentlocation&zeit=3&interessen=wandern,museum"
+}
