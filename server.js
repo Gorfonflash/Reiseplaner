@@ -61,7 +61,7 @@ const server = http.createServer((req, res) => {
     res.statusCode = 500;
     res.setHeader('Content-Type', 'text/plain');
     res.end(
-      'Server misconfigured: Missing API keys - ' + missingKeys.join(', ')
+      'Server misconfigured: Missing API keys - ' + missingKeys.join(',')
     );
     return;
   }
@@ -391,3 +391,4 @@ const server = http.createServer((req, res) => {
 server.listen(port, hostname, () => {
   console.log(`Server läuft unter http://${hostname}:${port}/`);
 });
+
