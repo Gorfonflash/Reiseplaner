@@ -2,6 +2,10 @@
 const http = require('http');
 const https = require('https');
 const url = require('url');
+const fs = require('fs');
+const path = require('path');
+const moment = require('moment-timezone');
+const i18next = require('i18next');
 
 const hostname = '0.0.0.0';
 const port = process.env.PORT || 3000;
@@ -19,6 +23,14 @@ if (missingKeys.length) {
   );
 }
 
+i18next.init({
+  fallbackLng: 'en',
+  resources: {
+    en: { translation: JSON.parse(fs.readFileSync(path.join(__dirname, 'locales/en/translation.json'), 'utf8')) },
+    de: { translation: JSON.parse(fs.readFileSync(path.join(__dirname, 'locales/de/translation.json'), 'utf8')) }
+  }
+});
+
 function haversineDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000; // meters
   const toRad = deg => (deg * Math.PI) / 180;
@@ -31,6 +43,19 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+const activityTags = {
+  'wandern': ['familie', 'adrenalin'],
+  'spaziergang': ['familie'],
+  'see': ['familie', 'paar'],
+  'stadtbummel': ['familie', 'paar'],
+  'biergarten': ['paar'],
+  'museum': ['familie', 'paar'],
+  'wellness': ['paar'],
+  'kino': ['familie', 'paar'],
+  'escape room': ['familie', 'adrenalin'],
+  'kaffeehaus': ['paar']
+};
+
 const server = http.createServer((req, res) => {
   if (missingKeys.length) {
     res.statusCode = 500;
@@ -42,6 +67,8 @@ const server = http.createServer((req, res) => {
   }
   const parsedUrl = url.parse(req.url, true);
   const query = parsedUrl.query;
+  const lang = (req.headers['accept-language'] || 'en').split(',')[0].split('-')[0];
+  i18next.changeLanguage(lang);
 
   // --- Vorschlagslogik ---
   if (parsedUrl.pathname === '/vorschlag') {
@@ -52,7 +79,7 @@ const server = http.createServer((req, res) => {
       .map(x => x.trim().toLowerCase())
       .filter(Boolean);
 
-    const weatherEndpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=de`;
+  const weatherEndpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=${lang}`;
 
     https.get(weatherEndpoint, (apiRes) => {
       let weatherData = '';
@@ -76,7 +103,9 @@ const server = http.createServer((req, res) => {
           vorschlaege = kandidaten.slice(0, 3);
         }
 
-        const antwortText = `📍 Ort: ${ort}\n🕒 Zeitbudget: ${zeit}h\n🌤️ Wetter: ${wetterBeschreibung || 'unbekannt'}\n\n✨ Basierend auf Wetter und Interessen empfehlen wir dir:\n• ` + vorschlaege.join('\n• ');
+        const items = vorschlaege.map(v => ({ name: v, tags: activityTags[v] || [] }));
+
+        const antwortText = `📍 ${i18next.t('ort')}: ${ort}\n🕒 ${i18next.t('zeitbudget')}: ${zeit}h\n🌤️ ${i18next.t('wetter')}: ${wetterBeschreibung || 'unbekannt'}\n\n✨ ${i18next.t('empfehlung')}\n• ` + vorschlaege.join('\n• ');
 
         if (query.format === "json") {
           res.setHeader('Content-Type', 'application/json');
@@ -84,7 +113,7 @@ const server = http.createServer((req, res) => {
             ort,
             zeit,
             wetter: wetterBeschreibung,
-            vorschlaege
+            vorschlaege: items
           }));
         } else {
           res.setHeader('Content-Type', 'text/plain');
@@ -176,6 +205,36 @@ const server = http.createServer((req, res) => {
         res.setHeader('Content-Type', 'application/json');
         res.end(data);
       });
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: err.message }));
+    });
+    return;
+  }
+
+  // --- /foto-Route ---
+  if (parsedUrl.pathname === '/foto') {
+    const reference = query.reference || '';
+    const maxwidth = parseInt(query.maxwidth) || 400;
+    if (!reference) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'reference fehlt' }));
+      return;
+    }
+
+    const photoEndpoint = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(reference)}&key=${GOOGLE_API_KEY}`;
+    https.get(photoEndpoint, apiRes => {
+      const cdnUrl = apiRes.headers.location;
+      if (!cdnUrl) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Kein Foto gefunden' }));
+        return;
+      }
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ url: cdnUrl }));
     }).on('error', err => {
       res.statusCode = 500;
       res.setHeader('Content-Type', 'application/json');
@@ -285,10 +344,28 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // --- /tagesablauf-Route ---
+  if (parsedUrl.pathname === '/tagesablauf') {
+    const start = query.start || '09:00';
+    const tz = query.tz || 'Europe/Berlin';
+    const dauerAkt = parseInt(query.dauerAktivitaet) || 60;
+
+    const startMoment = moment.tz(start, 'HH:mm', tz);
+    const plan = [
+      { step: 'Anreise', time: startMoment.format('HH:mm') },
+      { step: 'Aktivität', time: startMoment.clone().add(30, 'minutes').format('HH:mm') },
+      { step: 'Essen', time: startMoment.clone().add(30 + dauerAkt, 'minutes').format('HH:mm') },
+      { step: 'Rückreise', time: startMoment.clone().add(90 + dauerAkt, 'minutes').format('HH:mm') }
+    ];
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ plan }));
+    return;
+  }
+
   // --- /wetter-Route ---
   if (parsedUrl.pathname === '/wetter') {
     const ort = query.ort || 'Bern';
-    const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=de`;
+    const endpoint = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(ort)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=${lang}`;
 
     https.get(endpoint, (apiRes) => {
       let data = '';
@@ -308,7 +385,7 @@ const server = http.createServer((req, res) => {
   // --- Standard-Antwort ---
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
-  res.end('Server live. Nutze /orte, /wetter oder /vorschlag?ort=currentlocations&zeit=3&interessen=wandern,museum');
+  res.end(i18next.t('server_live'));
 });
 
 server.listen(port, hostname, () => {
