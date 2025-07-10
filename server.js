@@ -223,9 +223,23 @@ const server = http.createServer((req, res) => {
       res.end(JSON.stringify({ error: 'reference fehlt' }));
       return;
     }
-    const urlPhoto = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(reference)}&key=${GOOGLE_API_KEY}`;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ url: urlPhoto }));
+
+    const photoEndpoint = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxwidth}&photoreference=${encodeURIComponent(reference)}&key=${GOOGLE_API_KEY}`;
+    https.get(photoEndpoint, apiRes => {
+      const cdnUrl = apiRes.headers.location;
+      if (!cdnUrl) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ error: 'Kein Foto gefunden' }));
+        return;
+      }
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ url: cdnUrl }));
+    }).on('error', err => {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: err.message }));
+    });
     return;
   }
 
