@@ -1,368 +1,48 @@
 {
-  "openapi": "3.0.3",
+  "openapi": "3.1.0",
   "info": {
-    "title": "Reiseplaner API",
-    "version": "1.0.0",
-    "description": "API für Orte, Wetter, Routen und Vorschläge.",
-    "license": {
-      "name": "MIT",
-      "url": "https://opensource.org/licenses/MIT"
-    }
+    "title": "Reise- und Ausflugsplanungssystem",
+    "version": "1.2.0"
   },
-  "servers": [
-    {
-      "url": "https://reiseplaner.onrender.com"
-    }
-  ],
   "paths": {
-    "/vorschlag": {
-      "get": {
-        "operationId": "aktivitaetVorschlagen",
-        "summary": "Aktivitätsvorschläge basierend auf Wetter und Interessen",
-        "parameters": [
-          {
-            "name": "ort",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "Bern"
-            },
-            "required": false,
-            "description": "Stadtname"
-          },
-          {
-            "name": "zeit",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 2
-            },
-            "required": false,
-            "description": "Zeitbudget in Stunden"
-          },
-          {
-            "name": "interessen",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Kommagetrennte Interessen"
-          },
-          {
-            "name": "format",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "\"json\" für strukturiertes Ergebnis"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Empfehlungen als Text oder JSON",
-            "content": {
-              "application/json": {
-                "example": {
-                  "ort": "Bern",
-                  "zeit": 2,
-                  "wetter": "klar",
-                  "vorschlaege": [
-                    {
-                      "name": "museum",
-                      "tags": [
-                        "familie",
-                        "paar"
-                      ],
-                      "ort": "Historisches Museum"
-                    },
-                    {
-                      "name": "kino",
-                      "tags": [
-                        "familie",
-                        "paar"
-                      ],
-                      "ort": "Kino Rex"
-                    }
-                  ]
-                }
-              },
-              "text/plain": {
-                "example": "📍 Ort: Bern\n🕒 Zeitbudget: 2h\n..."
-              }
-            }
-          }
-        }
-      }
-    },
     "/orte": {
       "get": {
         "operationId": "orteFinden",
-        "summary": "Orte eines Typs in einer Stadt",
+        "summary": "Sucht Orte eines bestimmten Typs an einem Ort über Google Places API",
         "parameters": [
           {
             "name": "ort",
             "in": "query",
+            "required": true,
             "schema": {
-              "type": "string",
-              "default": "Bern"
-            },
-            "required": false,
-            "description": "Stadtname"
+              "type": "string"
+            }
           },
           {
             "name": "typ",
             "in": "query",
+            "required": true,
             "schema": {
-              "type": "string",
-              "default": "museum"
-            },
-            "required": false,
-            "description": "Ortstyp"
+              "type": "string"
+            }
           },
           {
             "name": "maxDist",
             "in": "query",
+            "required": false,
             "schema": {
               "type": "integer"
-            },
-            "required": false,
-            "description": "Maximale Entfernung in Metern"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Antwort von Google Places",
-            "content": {
-              "application/json": {}
             }
           }
-        }
-      }
-    },
-    "/geocode": {
-      "get": {
-        "operationId": "adresseGeocodieren",
-        "summary": "Geokoordinaten zu einer Adresse",
-        "parameters": [
-          {
-            "name": "adresse",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Adresse"
-          }
         ],
         "responses": {
           "200": {
-            "description": "Geocodergebnis",
-            "content": {
-              "application/json": {}
-            }
-          }
-        }
-      }
-    },
-    "/poi": {
-      "get": {
-        "operationId": "poiFinden",
-        "summary": "Sehenswürdigkeiten in der Nähe",
-        "parameters": [
-          {
-            "name": "lat",
-            "in": "query",
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "Breitengrad"
-          },
-          {
-            "name": "lng",
-            "in": "query",
-            "schema": {
-              "type": "number"
-            },
-            "required": true,
-            "description": "Längengrad"
-          },
-          {
-            "name": "typ",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "tourist_attraction"
-            },
-            "required": false,
-            "description": "Ortstyp"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Antwort von Google Places",
-            "content": {
-              "application/json": {}
-            }
-          }
-        }
-      }
-    },
-    "/route": {
-      "get": {
-        "operationId": "routeBerechnen",
-        "summary": "Route zwischen zwei Punkten",
-        "parameters": [
-          {
-            "name": "start",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Startort"
-          },
-          {
-            "name": "von",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Alias f\u00fcr start"
-          },
-          {
-            "name": "ziel",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Zielort"
-          },
-          {
-            "name": "nach",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Alias f\u00fcr ziel"
-          },
-          {
-            "name": "modus",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "driving"
-            },
-            "required": false,
-            "description": "Fortbewegungsmodus"
-          },
-          {
-            "name": "abfahrt",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "description": "Unixzeitpunkt oder 'now' f\u00fcr Transit"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Routendaten oder Hinweis auf gleiche Orte",
+            "description": "Google-Ortsdaten",
             "content": {
               "application/json": {
-                "examples": {
-                  "identisch": {
-                    "value": {
-                      "message": "Start und Ziel identisch"
-                    }
-                  },
-                  "google": {
-                    "value": {
-                      "routes": []
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Fehlende Parameter",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "missing": {
-                    "value": {
-                      "error": "Start oder Ziel fehlt"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/transportzeit": {
-      "get": {
-        "operationId": "transportzeitBerechnen",
-        "summary": "ÖV-Reisezeit zwischen zwei Orten",
-        "parameters": [
-          {
-            "name": "userOrt",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Startort"
-          },
-          {
-            "name": "zielOrt",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "description": "Zielort"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Reisezeit oder Hinweis auf gleiche Orte",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "identisch": {
-                    "value": {
-                      "message": "Start und Ziel identisch"
-                    }
-                  },
-                  "zeit": {
-                    "value": {
-                      "dauer": "10 min",
-                      "abfahrt": "12:00"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Fehlende Parameter",
-            "content": {
-              "application/json": {
-                "examples": {
-                  "missing": {
-                    "value": {
-                      "error": "Start oder Ziel fehlt"
-                    }
-                  }
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
                 }
               }
             }
@@ -373,24 +53,266 @@
     "/wetter": {
       "get": {
         "operationId": "wetterAbrufen",
-        "summary": "Aktuelles Wetter für einen Ort",
+        "summary": "Gibt aktuelles Wetter für einen Ort zurück",
         "parameters": [
           {
             "name": "ort",
             "in": "query",
+            "required": true,
             "schema": {
-              "type": "string",
-              "default": "Bern"
-            },
-            "required": false,
-            "description": "Stadtname"
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Wetterdaten",
+            "description": "Wetterdaten als JSON",
             "content": {
-              "application/json": {}
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/vorschlag": {
+      "get": {
+        "operationId": "aktivitaetVorschlagen",
+        "summary": "Empfiehlt Aktivitäten je nach Ort, Wetter, Zeit und Interessen",
+        "parameters": [
+          {
+            "name": "ort",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "zeit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "interessen",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Kommagetrennte Liste wie 'wandern,wellness,museum'"
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Empfohlene Aktivitäten im Klartext",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/geocode": {
+      "get": {
+        "operationId": "adresseGeocodieren",
+        "summary": "Gibt Geokoordinaten zu einer Adresse zurück",
+        "parameters": [
+          {
+            "name": "adresse",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Geocoding-Ergebnis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/poi": {
+      "get": {
+        "operationId": "poiFinden",
+        "summary": "Sucht Points of Interest in der Nähe einer Koordinate",
+        "parameters": [
+          {
+            "name": "lat",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "typ",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "POI-Ergebnisse",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/route": {
+      "get": {
+        "operationId": "routeBerechnen",
+        "summary": "Berechnet eine Route zwischen Start- und Zielort",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "von",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ziel",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nach",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modus",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "abfahrt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Routendaten",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transportzeit": {
+      "get": {
+        "operationId": "transportzeitBerechnen",
+        "summary": "Gibt ÖPNV-Dauer und Abfahrtszeit zwischen zwei Orten zurück",
+        "parameters": [
+          {
+            "name": "userOrt",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "zielOrt",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transportzeitdaten",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
             }
           }
         }
@@ -399,37 +321,35 @@
     "/foto": {
       "get": {
         "operationId": "fotoUrl",
-  "summary": "Gibt eine CDN-URL zu einem Google-Foto zurück",
+        "summary": "Gibt eine CDN-URL zu einem Google-Foto zurück",
         "parameters": [
           {
             "name": "reference",
             "in": "query",
-        "parameters": [
-          {
-            "name": "reference",
-            "in": "query",
+            "required": true,
             "schema": {
               "type": "string"
-            },
-            "required": true,
-            "description": "photo_reference aus Places API"
+            }
           },
           {
             "name": "maxwidth",
             "in": "query",
-            "schema": {
-              "type": "integer",
-              "default": 400
-            },
             "required": false,
-            "description": "Breite des Bildes"
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "URL",
             "content": {
-              "application/json": {}
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
             }
           },
           "400": {
@@ -446,45 +366,47 @@
           {
             "name": "start",
             "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "09:00"
-            },
             "required": false,
-            "description": "Startzeit HH:mm"
+            "schema": {
+              "type": "string"
+            }
           },
           {
             "name": "tz",
             "in": "query",
+            "required": false,
             "schema": {
-              "type": "string",
-              "default": "Europe/Berlin"
-            },
+              "type": "string"
+            }
+          },
+          {
+            "name": "dauerAktivitaet",
+            "in": "query",
             "required": false,
-            "description": "Zeitzone"
- "schema": {
-              "type": "integer",
-              "default": 60
-            },
-            "required": false,
-            "description": "Dauer der Aktivität in Minuten"
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "Plan",
             "content": {
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Plan",
-            "content": {
-              "application/json": {}
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
             }
           }
         }
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "https://reiseplaner.onrender.com"
+    }
+  ]
 }
