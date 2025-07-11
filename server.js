@@ -316,8 +316,8 @@ const server = http.createServer((req, res) => {
 
   // --- /route-Route ---
   if (parsedUrl.pathname === '/route') {
-    const origin = (query.start || '').trim();
-    const destination = (query.ziel || '').trim();
+    const origin = (query.start || query.von || '').trim();
+    const destination = (query.ziel || query.nach || '').trim();
     const mode = query.modus || 'driving';
 
     if (!origin || !destination) {
@@ -333,7 +333,12 @@ const server = http.createServer((req, res) => {
       return;
     }
 
-    const endpoint = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=${encodeURIComponent(mode)}&key=${GOOGLE_API_KEY}`;
+    let extra = '';
+    if (mode === 'transit') {
+      const when = query.abfahrt ? encodeURIComponent(query.abfahrt) : 'now';
+      extra = `&departure_time=${when}`;
+    }
+    const endpoint = `https://maps.googleapis.com/maps/api/directions/json?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}&mode=${encodeURIComponent(mode)}${extra}&key=${GOOGLE_API_KEY}`;
 
     https.get(endpoint, apiRes => {
       let data = '';

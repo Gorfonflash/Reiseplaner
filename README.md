@@ -6,6 +6,7 @@ Key additions:
 - `/foto` – resolves a Places `photo_reference` to the final CDN URL.
 - `/tagesablauf` – produces a simple timetable for the day.
 - `/vorschlag` – suggestions include audience tags (`familie`, `paar`, `adrenalin`) and now validate input using **zod**.
+- `/route` – supports public transit via `modus=transit` and optional `abfahrt`.
 
 ## Requirements
 
