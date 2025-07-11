@@ -221,8 +221,17 @@
             "schema": {
               "type": "string"
             },
-            "required": true,
+            "required": false,
             "description": "Startort"
+          },
+          {
+            "name": "von",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "Alias f\u00fcr start"
           },
           {
             "name": "ziel",
@@ -230,8 +239,17 @@
             "schema": {
               "type": "string"
             },
-            "required": true,
+            "required": false,
             "description": "Zielort"
+          },
+          {
+            "name": "nach",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "Alias f\u00fcr ziel"
           },
           {
             "name": "modus",
@@ -242,6 +260,15 @@
             },
             "required": false,
             "description": "Fortbewegungsmodus"
+          },
+          {
+            "name": "abfahrt",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "Unixzeitpunkt oder 'now' f\u00fcr Transit"
           }
         ],
         "responses": {
